@@ -3,8 +3,8 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <pcl/visualization/pcl_visualizer.h>
@@ -17,15 +17,16 @@
 
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/segmentation/sac_segmentation.h>
 
 #include <geograsp/GeoGrasp.h>
 
-pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("Cloud viewer"));
+pcl::visualization::PCLVisualizer::Ptr viewer(
+    new pcl::visualization::PCLVisualizer("Cloud viewer"));
 
 // callback signature
-void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
+void cloudCallback(const sensor_msgs::PointCloud2ConstPtr& inputCloudMsg) {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
   pcl::fromROSMsg(*inputCloudMsg, *cloud);
 
@@ -91,7 +92,8 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
   if (clusterIndices.empty()) {
     // Visualize the result
     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> planeColor(cloudPlane, 0, 255, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> planeColor(cloudPlane, 0,
+                                                                                  255, 0);
 
     viewer->removeAllPointClouds();
     viewer->removeAllShapes();
@@ -100,8 +102,7 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
     viewer->addPointCloud<pcl::PointXYZRGB>(cloudPlane, planeColor, "Plane");
 
     viewer->spinOnce();
-  }
-  else {
+  } else {
     std::vector<pcl::PointIndices>::const_iterator it = clusterIndices.begin();
     int objectNumber = 0;
 
@@ -112,8 +113,8 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
     for (it = clusterIndices.begin(); it != clusterIndices.end(); ++it) {
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr objectCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
 
-      for (std::vector<int>::const_iterator pit = it->indices.begin(); 
-          pit != it->indices.end(); ++pit)
+      for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end();
+           ++pit)
         objectCloud->points.push_back(cloud->points[*pit]);
 
       objectCloud->width = objectCloud->points.size();
@@ -129,8 +130,8 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
       GeoGrasp geoGraspPoints;
       geoGraspPoints.setBackgroundCloud(cloudPlaneXYZ);
       geoGraspPoints.setObjectCloud(objectCloudXYZ);
-      geoGraspPoints.setGripTipSize(25); // 25mm grip
-      geoGraspPoints.setGrasps(1); // Keep track only of the best
+      geoGraspPoints.setGripTipSize(25);  // 25mm grip
+      geoGraspPoints.setGrasps(1);        // Keep track only of the best
 
       // Calculate grasping points
       geoGraspPoints.compute();
@@ -153,11 +154,13 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
       viewer->addPointCloud<pcl::PointXYZRGB>(objectCloud, rgb, objectLabel + "Object");
       viewer->addPointCloud<pcl::PointXYZRGB>(cloudPlane, planeRGB, objectLabel + "Plane");
 
-      viewer->addSphere(bestGrasp.firstPoint, 0.01, 0, 0, 255, objectLabel + "First best grasp point");
-      viewer->addSphere(bestGrasp.secondPoint, 0.01, 255, 0, 0, objectLabel + "Second best grasp point");
+      viewer->addSphere(bestGrasp.firstPoint, 0.01, 0, 0, 255,
+                        objectLabel + "First best grasp point");
+      viewer->addSphere(bestGrasp.secondPoint, 0.01, 255, 0, 0,
+                        objectLabel + "Second best grasp point");
 
       pcl::ModelCoefficients axeX;
-      axeX.values.resize (6);    // We need 6 values
+      axeX.values.resize(6);  // We need 6 values
       axeX.values[0] = bestPose.midPointPose.translation()[0];
       axeX.values[1] = bestPose.midPointPose.translation()[1];
       axeX.values[2] = bestPose.midPointPose.translation()[2];
@@ -168,7 +171,7 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
       viewer->addLine(axeX, objectLabel + "Pose axeX");
 
       pcl::ModelCoefficients axeY;
-      axeY.values.resize (6);    // We need 6 values
+      axeY.values.resize(6);  // We need 6 values
       axeY.values[0] = bestPose.midPointPose.translation()[0];
       axeY.values[1] = bestPose.midPointPose.translation()[1];
       axeY.values[2] = bestPose.midPointPose.translation()[2];
@@ -179,7 +182,7 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
       viewer->addLine(axeY, objectLabel + "Pose axeY");
 
       pcl::ModelCoefficients axeZ;
-      axeZ.values.resize (6);    // We need 6 values
+      axeZ.values.resize(6);  // We need 6 values
       axeZ.values[0] = bestPose.midPointPose.translation()[0];
       axeZ.values[1] = bestPose.midPointPose.translation()[1];
       axeZ.values[2] = bestPose.midPointPose.translation()[2];
@@ -188,16 +191,15 @@ void cloudCallback(const sensor_msgs::PointCloud2ConstPtr & inputCloudMsg) {
       axeZ.values[5] = bestPose.midPointPose.linear()(2, 2);
 
       viewer->addLine(axeZ, objectLabel + "Pose axeZ");
-      
+
       objectNumber++;
     }
 
-    while (!viewer->wasStopped())
-      viewer->spinOnce(100);
+    viewer->spinOnce(100);
   }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   ros::init(argc, argv, "cloud_processor");
 
   viewer->initCameraParameters();
@@ -205,7 +207,7 @@ int main(int argc, char **argv) {
 
   ros::NodeHandle n("~");
   std::string cloudTopic;
-  
+
   n.getParam("topic", cloudTopic);
 
   ros::Subscriber sub = n.subscribe<sensor_msgs::PointCloud2>(cloudTopic, 1, cloudCallback);
